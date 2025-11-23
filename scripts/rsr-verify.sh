@@ -53,9 +53,17 @@ else
   echo "  ❌ Bronze: 0/50 points"
 fi
 total_bronze=$((total_bronze + 50))
+
+# Check for CRDT implementation
+if [ -f "src/crdt/mod.ts" ] && [ -f "src/crdt/lww-map.ts" ] && [ -f "src/crdt/merge.ts" ]; then
+  echo "  ✅ Silver: 30/30 points"
+  earned_silver=$((earned_silver + 30))
+else
+  echo "  ⚠️  Silver: 0/30 points (CRDT sync)"
+fi
 total_silver=$((total_silver + 30))
+
 total_gold=$((total_gold + 20))
-echo "  ⚠️  Silver: 0/30 points (CRDT sync)"
 echo "  ⚠️  Gold: 0/20 points (Full offline)"
 
 # 4. Documentation

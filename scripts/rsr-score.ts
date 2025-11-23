@@ -64,7 +64,15 @@ const checks: ComplianceCheck[] = [
     },
     silver: {
       points: 30,
-      check: async () => false // TODO: CRDT sync
+      check: async () => {
+        const crdtFiles = [
+          "src/crdt/mod.ts",
+          "src/crdt/lww-map.ts",
+          "src/crdt/merge.ts",
+        ];
+        const checks = await Promise.all(crdtFiles.map(fileExists));
+        return checks.every(Boolean);
+      }
     },
     gold: {
       points: 20,
