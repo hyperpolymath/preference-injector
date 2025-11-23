@@ -59,7 +59,8 @@ const checks: ComplianceCheck[] = [
     category: "3. Offline-First",
     bronze: {
       points: 50,
-      check: async () => false // TODO: Implement offline support
+      check: async () => await fileExists("src/providers/offline-provider.ts") &&
+        await fileContains("src/providers/offline-provider.ts", "IndexedDB")
     },
     silver: {
       points: 30,
@@ -185,7 +186,15 @@ const checks: ComplianceCheck[] = [
     category: "11. Distribution",
     bronze: {
       points: 50,
-      check: async () => false // TODO: Platform templates
+      check: async () => {
+        const templates = [
+          ".gitlab-ci.yml",
+          ".github/workflows/ci-extended.yml",
+          "bitbucket-pipelines.yml"
+        ];
+        const checks = await Promise.all(templates.map(fileExists));
+        return checks.every(Boolean);
+      }
     },
     silver: {
       points: 50,

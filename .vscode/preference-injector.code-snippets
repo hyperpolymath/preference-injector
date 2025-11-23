@@ -1,0 +1,25 @@
+{
+  "Create Preference Injector": {
+    "prefix": "pref-injector",
+    "body": [
+      "import { PreferenceInjector } from '@preference-injector/core'",
+      "",
+      "const injector = new PreferenceInjector({",
+      "  providers: [$1],",
+      "  cache: { enabled: true, ttl: 300000 },",
+      "  offline: { enabled: true, syncInterval: 60000 }",
+      "})"
+    ],
+    "description": "Create PreferenceInjector"
+  },
+  "Get Preference": {
+    "prefix": "pref-get",
+    "body": ["const ${1:value} = await injector.get('${2:key}', ${3:default})"],
+    "description": "Get preference value"
+  },
+  "Set Preference": {
+    "prefix": "pref-set",
+    "body": ["await injector.set('${1:key}', ${2:value})"],
+    "description": "Set preference value"
+  }
+}
