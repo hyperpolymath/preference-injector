@@ -40,6 +40,18 @@ erl_crash.dump
 # ReScript
 /lib/bs/
 /.bsb.lock
+*.bs.js
+.merlin
+
+# BANNED files (should never be committed)
+package.json
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+Makefile
+makefile
+GNUmakefile
 
 # Python (SaltStack only)
 __pycache__/

@@ -1,51 +1,108 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2024 Hyperpolymath
 = Preference Injector
 
-A powerful, type-safe preference injection system for dynamic configuration management in Node.js and TypeScript applications.
+A powerful, type-safe preference injection system for dynamic configuration management.
+
+Built with *ReScript* and *Deno* following the Hyperpolymath Language Standard.
 
 == Features
 
-- *Multiple Providers*: File-based, environment variables, API, and in-memory storage
-- *Priority System*: Resolve conflicts between providers using customizable strategies
-- *Type Safety*: Full TypeScript support with generic type helpers
-- *Caching*: LRU and TTL caching strategies for performance
-- *Validation*: Schema-based and custom validation rules
-- *Encryption*: AES-256-GCM encryption for sensitive preferences
-- *Audit Logging*: Track all preference operations
-- *Migrations*: Version and migrate preference schemas
-- *React Integration*: Hooks and context providers
-- *Express Middleware*: RESTful API and request helpers
-- *CLI Tool*: Command-line interface for preference management
+* *Multiple Providers*: File-based, environment variables, API, and in-memory storage
+* *Priority System*: Resolve conflicts between providers using customizable strategies
+* *Type Safety*: Full ReScript type safety with pattern matching
+* *Caching*: LRU and TTL caching strategies for performance
+* *Validation*: Schema-based and custom validation rules
+* *Encryption*: AES-256-GCM encryption for sensitive preferences
+* *Audit Logging*: Track all preference operations
+* *Migrations*: Version and migrate preference schemas
+* *CRDT Support*: Distributed preference synchronization
+* *Post-Quantum Crypto*: Future-proof cryptographic operations
+
+== Language Policy
+
+This project follows the https://github.com/hyperpolymath[Hyperpolymath Language Standard]:
+
+[cols="1,1"]
+|===
+|Allowed |Banned
+
+|ReScript
+|TypeScript
+
+|Deno
+|Node.js, npm, bun
+
+|Rust (for extensions)
+|Go, Python (except SaltStack)
+
+|Nickel (configuration)
+|Makefile
+|===
 
 == Installation
 
-```bash
-npm install @hyperpolymath/preference-injector
-```
+=== Prerequisites
+
+* https://deno.land[Deno] >= 1.40.0
+* https://rescript-lang.org[ReScript] >= 11.0.0
+* https://just.systems[Just] (for task running)
+
+=== Setup
+
+[source,bash]
+----
+# Clone the repository
+git clone https://github.com/hyperpolymath/preference-injector.git
+cd preference-injector
+
+# Build ReScript code
+just build
+
+# Run tests
+just test
+----
 
 == Quick Start
 
-```typescript
-import { PreferenceInjector, MemoryProvider } from '@hyperpolymath/preference-injector';
+[source,rescript]
+----
+open Types
+open Injector
 
-// Create an injector with an in-memory provider
-const injector = new PreferenceInjector({
-  providers: [new MemoryProvider()],
-});
+// Create an injector with configuration
+let injector = make(
+  ~config=Some({
+    conflictResolution: Some(HighestPriority),
+    enableCache: Some(true),
+    cacheTTL: Some(3600000),
+    enableValidation: Some(true),
+    enableEncryption: None,
+    enableAudit: Some(true),
+    encryptionKey: None,
+  }),
+)
 
-await injector.initialize();
+// Create a memory provider
+let memProvider = MemoryProvider.make(~priority=Normal)
+
+// Add provider and initialize
+addProvider(injector, provider)
+await initialize(injector)
 
 // Set preferences
-await injector.set('theme', 'dark');
-await injector.set('fontSize', 14);
+switch await set(injector, "theme", String("dark"), None) {
+| Ok() => Js.Console.log("Theme set!")
+| Error(e) => Js.Console.error(e.message)
+}
 
 // Get preferences
-const theme = await injector.get('theme');
-console.log('Theme:', theme); // 'dark'
-
-// Get with type safety
-const fontSize = await injector.getTyped<number>('fontSize');
-console.log('Font Size:', fontSize); // 14
-```
+switch await get(injector, "theme", None) {
+| Ok(String(value)) => Js.Console.log(`Theme: ${value}`)
+| Ok(_) => Js.Console.error("Unexpected type")
+| Error(e) => Js.Console.error(e.message)
+}
+----
 
 == Providers
 
@@ -53,272 +110,174 @@ console.log('Font Size:', fontSize); // 14
 
 In-memory storage for runtime preferences:
 
-```typescript
-import { MemoryProvider, PreferencePriority } from '@hyperpolymath/preference-injector';
-
-const provider = new MemoryProvider(PreferencePriority.NORMAL);
-```
+[source,rescript]
+----
+let provider = MemoryProvider.make(~priority=Normal)
+----
 
 === File Provider
 
 JSON or .env file-based storage:
 
-```typescript
-import { FileProvider } from '@hyperpolymath/preference-injector';
-
-const provider = new FileProvider({
-  filePath: './config.json',
-  priority: PreferencePriority.NORMAL,
-  watchForChanges: true,
-  format: 'json', // or 'env'
-});
-```
+[source,rescript]
+----
+let provider = FileProvider.make(
+  ~config={
+    filePath: "./config.json",
+    priority: Normal,
+    format: JSON,
+    watchForChanges: true,
+  }
+)
+----
 
 === Environment Provider
 
 Environment variable integration:
 
-```typescript
-import { EnvProvider } from '@hyperpolymath/preference-injector';
-
-const provider = new EnvProvider({
-  prefix: 'APP_',
-  priority: PreferencePriority.HIGHEST,
-  parseValues: true,
-});
-```
+[source,rescript]
+----
+let provider = EnvProvider.make(
+  ~config=Some({
+    prefix: Some("APP_"),
+    priority: Highest,
+    parseValues: true,
+  })
+)
+----
 
 === API Provider
 
 Remote configuration service:
 
-```typescript
-import { ApiProvider } from '@hyperpolymath/preference-injector';
-
-const provider = new ApiProvider({
-  baseUrl: 'https://config.example.com',
-  apiKey: 'your-api-key',
-  priority: PreferencePriority.NORMAL,
-  timeout: 5000,
-  retries: 3,
-});
-```
-
-== Multi-Provider Setup
-
-Use multiple providers with automatic conflict resolution:
-
-```typescript
-const injector = new PreferenceInjector({
-  providers: [
-    new EnvProvider({ priority: PreferencePriority.HIGHEST }),
-    new FileProvider({ filePath: './config.json', priority: PreferencePriority.NORMAL }),
-    new MemoryProvider(PreferencePriority.LOW),
-  ],
-  conflictResolution: ConflictResolution.HIGHEST_PRIORITY,
-});
-```
+[source,rescript]
+----
+let provider = ApiProvider.make(
+  ~config={
+    baseUrl: "https://config.example.com",
+    apiKey: Some("your-api-key"),
+    headers: Js.Dict.empty(),
+    priority: Normal,
+    timeout: 5000,
+    retries: 3,
+  }
+)
+----
 
 == Validation
 
 Add validation rules to ensure preference values are valid:
 
-```typescript
-import { CommonValidationRules } from '@hyperpolymath/preference-injector';
+[source,rescript]
+----
+// Add validation rules
+addValidationRule(injector, "email", Validator.CommonRules.email())
+addValidationRule(injector, "age", Validator.CommonRules.numberRange(~min=0.0, ~max=150.0))
+addValidationRule(injector, "username", Validator.CommonRules.stringLength(~min=3, ~max=20))
+----
 
-const validator = injector.getValidator();
+== CRDT Support
 
-// Add built-in validation rules
-validator.addRule('email', CommonValidationRules.email());
-validator.addRule('age', CommonValidationRules.numberRange(0, 150));
-validator.addRule('username', CommonValidationRules.stringLength(3, 20));
+Distributed preference synchronization with conflict-free replicated data types:
 
-// Set with validation
-await injector.set('email', 'user@example.com', { validate: true });
-```
+* *G-Counter*: Grow-only counter
+* *PN-Counter*: Positive-negative counter
+* *LWW-Register*: Last-writer-wins register
+* *LWW-Map*: Last-writer-wins map
+* *OR-Set*: Observed-remove set
 
-== Schema Validation
+== Cryptography
 
-Define schemas for your preferences:
+Modern cryptographic primitives (RSR-compliant, no MD5/SHA1):
 
-```typescript
-import { SchemaBuilder } from '@hyperpolymath/preference-injector';
+* *Hashing*: SHA-256, SHA-512, BLAKE3
+* *Encryption*: AES-256-GCM
+* *Signatures*: ECDSA (P-256, P-384)
+* *Key Exchange*: ECDH
+* *Post-Quantum*: Kyber support planned
 
-const schema = new SchemaBuilder()
-  .string('apiUrl', { required: true, pattern: /^https?:\/\// })
-  .number('timeout', { min: 0, max: 30000, default: 5000 })
-  .boolean('debug', { default: false })
-  .build();
+== Development
 
-const schemaValidator = new SchemaValidator(schema);
-```
+=== Build
 
-== Encryption
+[source,bash]
+----
+just build        # Build ReScript code
+just build-clean  # Clean and rebuild
+----
 
-Encrypt sensitive preferences:
+=== Test
 
-```typescript
-import { AESEncryptionService } from '@hyperpolymath/preference-injector';
+[source,bash]
+----
+just test         # Run all tests
+just test-rescript  # Run ReScript tests
+just test-coverage  # Run with coverage
+----
 
-const encryptionService = new AESEncryptionService('your-secret-password');
-injector.setEncryptionService(encryptionService);
+=== CI Pipeline
 
-// Store encrypted
-await injector.set('apiKey', 'secret-key', { encrypt: true });
+[source,bash]
+----
+just ci           # Full CI pipeline (clean, build, lint, test, verify)
+just rsr-verify   # RSR Framework compliance check
+----
 
-// Retrieve and decrypt
-const apiKey = await injector.get('apiKey', { decrypt: true });
-```
+== Project Structure
 
-== Caching
+[source]
+----
+preference-injector/
+├── src/rescript/           # ReScript source code
+│   ├── core/               # Core injector logic
+│   ├── providers/          # Preference providers
+│   ├── utils/              # Utility functions
+│   ├── types/              # Type definitions
+│   ├── errors/             # Error handling
+│   ├── crdt/               # CRDT implementations
+│   └── crypto/             # Cryptographic utilities
+├── tests/rescript/         # ReScript tests
+├── examples/               # Usage examples
+├── docs/                   # Documentation
+├── deno.json               # Deno configuration
+├── bsconfig.json           # ReScript configuration
+├── justfile                # Just task runner
+├── Mustfile.epx            # Deployment state contract
+└── config.ncl              # Nickel configuration
+----
 
-Enable caching for better performance:
+== Configuration
 
-```typescript
-const injector = new PreferenceInjector({
-  providers: [provider],
-  enableCache: true,
-  cacheTTL: 3600000, // 1 hour
-});
-```
+Configuration is managed via Nickel (`config.ncl`) for type-safe, validated settings.
 
-== Audit Logging
-
-Track all preference operations:
-
-```typescript
-const injector = new PreferenceInjector({
-  providers: [provider],
-  enableAudit: true,
-});
-
-// Get audit log
-const auditLogger = injector.getAuditLogger();
-const entries = auditLogger.getEntries();
-```
-
-== React Integration
-
-Use preferences in React applications:
-
-```tsx
-import { PreferenceProvider, usePreference } from '@hyperpolymath/preference-injector';
-
-function App() {
-  return (
-    <PreferenceProvider injector={injector}>
-      <ThemeToggle />
-    </PreferenceProvider>
-  );
-}
-
-function ThemeToggle() {
-  const [theme, setTheme, loading] = usePreference<string>('theme', 'light');
-
-  if (loading) return <div>Loading...</div>;
-
-  return (
-    <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-      Current: {theme}
-    </button>
-  );
-}
-```
-
-== Express Integration
-
-Add preference management to Express applications:
-
-```typescript
-import express from 'express';
-import {
-  preferenceMiddleware,
-  createPreferenceRouter,
-} from '@hyperpolymath/preference-injector';
-
-const app = express();
-
-// Attach preferences to requests
-app.use(preferenceMiddleware({ injector }));
-
-// Add REST API
-app.use('/api', createPreferenceRouter(injector));
-
-// Use in routes
-app.get('/config', async (req, res) => {
-  const value = await req.getPreference('setting');
-  res.json({ value });
-});
-```
-
-== CLI Tool
-
-Manage preferences from the command line:
-
-```bash
-= Get a preference
-preference-injector get theme
-
-= Set a preference
-preference-injector set theme dark
-
-= List all preferences
-preference-injector -f config.json list
-
-= Delete a preference
-preference-injector delete old-key
-
-= Clear all preferences
-preference-injector clear
-```
-
-== Migrations
-
-Version and migrate preference schemas:
-
-```typescript
-import { MigrationManager, createMigration } from '@hyperpolymath/preference-injector';
-
-const manager = new MigrationManager();
-
-manager.register(
-  createMigration(
-    1,
-    'rename-theme-to-color-scheme',
-    async (prefs) => {
-      // Migration logic
-      return prefs;
-    },
-    async (prefs) => {
-      // Rollback logic
-      return prefs;
-    }
-  )
-);
-
-await manager.migrateToLatest(preferences, 0);
-```
+[source,bash]
+----
+just nickel-check   # Validate Nickel config
+just nickel-export  # Export to JSON
+----
 
 == API Documentation
 
-For detailed API documentation, see [API.md](./docs/API.md).
+See the link:docs/API.md[API Documentation] for detailed API reference.
 
 == Examples
 
-Check the [examples](./examples) directory for more usage examples:
+Check the `examples/` directory for usage examples:
 
-- [Basic Usage](./examples/basic-usage.ts)
-- [React Integration](./examples/react-example.tsx)
-- [Express Integration](./examples/express-example.ts)
+* `basic_usage.res` - Basic preference management
 
 == Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see link:CONTRIBUTING.md[CONTRIBUTING.md] for guidelines.
+
+*Important*: All contributions must follow the Hyperpolymath Language Policy. TypeScript, Node.js, npm, and Makefile contributions will be rejected.
 
 == License
 
-MIT
+MIT - See link:LICENSE.txt[LICENSE.txt]
+
+Dual-licensed under link:PALIMPSEST-LICENSE.txt[Palimpsest License] for special use cases.
 
 == Changelog
 
-See [CHANGELOG.md](./CHANGELOG.md) for release history.
+See link:CHANGELOG.md[CHANGELOG.md] for release history.

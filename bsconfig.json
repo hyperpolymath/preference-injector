@@ -5,6 +5,16 @@
     {
       "dir": "src/rescript",
       "subdirs": true
+    },
+    {
+      "dir": "tests/rescript",
+      "subdirs": true,
+      "type": "dev"
+    },
+    {
+      "dir": "examples",
+      "subdirs": true,
+      "type": "dev"
     }
   ],
   "package-specs": [
@@ -19,13 +29,5 @@
     "error": "+101"
   },
   "namespace": true,
-  "refmt": 3,
-  "gentypeconfig": {
-    "language": "typescript",
-    "shims": {},
-    "debug": {
-      "all": false,
-      "basic": false
-    }
-  }
+  "refmt": 3
 }
