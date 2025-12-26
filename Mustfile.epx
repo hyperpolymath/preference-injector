@@ -1,0 +1,102 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2024 Hyperpolymath
+#
+# Mustfile.epx - Contract of Physical State
+# Based on Ephapax Linear Logic
+# https://github.com/hyperpolymath/mustfile
+#
+# This file governs deployment transitions and physical state management.
+# Local development is handled by justfile, deployment by must.
+
+version: 1.0.0
+name: preference-injector
+description: Type-safe preference injection system
+
+# Runtime environment requirements
+runtime:
+  deno: ">=1.40.0"
+  rescript: ">=11.0.0"
+
+# Package manager hierarchy (priority order)
+packages:
+  primary: guix
+  fallback: nix
+  js: deno
+
+# Deployment targets
+targets:
+  container:
+    engine: podman
+    image: denoland/deno:alpine
+
+  serverless:
+    provider: deno-deploy
+    entrypoint: src/rescript/PreferenceInjector.bs.js
+
+# State transitions (Ephapax - resources consumed to produce outputs)
+transitions:
+  # Build transition: sources -> compiled JS
+  build:
+    consumes:
+      - src/rescript/**/*.res
+      - bsconfig.json
+    produces:
+      - src/rescript/**/*.bs.js
+    command: rescript build -with-deps
+
+  # Test transition: compiled code -> test results
+  test:
+    requires: build
+    consumes:
+      - tests/rescript/**/*.bs.js
+    produces:
+      - coverage/
+    command: deno test --allow-all --coverage=coverage/
+
+  # Deploy transition: built artifacts -> running service
+  deploy:
+    requires: [build, test]
+    consumes:
+      - src/rescript/**/*.bs.js
+      - deno.json
+    produces:
+      - deployment.manifest
+    command: deployctl deploy --project=preference-injector
+
+# Security requirements (RSR Framework)
+security:
+  # No MD5/SHA1 for security
+  banned_hashes: [md5, sha1]
+  # HTTPS only
+  require_https: true
+  # No hardcoded secrets
+  no_secrets: true
+  # Required documentation
+  required_docs:
+    - README.adoc
+    - SECURITY.md
+    - LICENSE.txt
+    - CONTRIBUTING.md
+
+# Language policy enforcement
+language_policy:
+  allowed:
+    - rescript
+    - javascript  # Only compiled output from ReScript
+    - bash
+    - nickel
+  banned:
+    - typescript
+    - nodejs
+    - npm
+    - bun
+
+# CI/CD integration
+ci:
+  pre_commit:
+    - rescript format
+    - deno fmt --check
+    - deno lint
+  pre_push:
+    - rescript build
+    - deno test --allow-all

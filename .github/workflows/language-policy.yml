@@ -1,0 +1,143 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2024 Hyperpolymath
+#
+# Language Policy Enforcement Workflow
+# Rejects PRs that violate the Hyperpolymath Language Standard
+
+name: Language Policy
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  enforce-policy:
+    name: Enforce Language Policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for banned TypeScript files
+        run: |
+          if find . -name "*.ts" -not -path "./node_modules/*" | grep -q .; then
+            echo "❌ ERROR: TypeScript files detected (BANNED)"
+            echo "TypeScript is not allowed in this project. Use ReScript instead."
+            find . -name "*.ts" -not -path "./node_modules/*"
+            exit 1
+          fi
+          echo "✅ No TypeScript files found"
+
+      - name: Check for banned TSX files
+        run: |
+          if find . -name "*.tsx" -not -path "./node_modules/*" | grep -q .; then
+            echo "❌ ERROR: TSX files detected (BANNED)"
+            echo "TSX is not allowed in this project. Use ReScript instead."
+            find . -name "*.tsx" -not -path "./node_modules/*"
+            exit 1
+          fi
+          echo "✅ No TSX files found"
+
+      - name: Check for package.json (npm)
+        run: |
+          if [ -f package.json ]; then
+            echo "❌ ERROR: package.json detected (BANNED)"
+            echo "npm is not allowed. Use deno.json for dependencies."
+            exit 1
+          fi
+          echo "✅ No package.json found"
+
+      - name: Check for package-lock.json
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "❌ ERROR: package-lock.json detected (BANNED)"
+            exit 1
+          fi
+          echo "✅ No package-lock.json found"
+
+      - name: Check for node_modules
+        run: |
+          if [ -d node_modules ]; then
+            echo "❌ ERROR: node_modules detected (BANNED)"
+            echo "node_modules is not allowed. Use Deno imports."
+            exit 1
+          fi
+          echo "✅ No node_modules found"
+
+      - name: Check for yarn.lock
+        run: |
+          if [ -f yarn.lock ]; then
+            echo "❌ ERROR: yarn.lock detected (BANNED)"
+            exit 1
+          fi
+          echo "✅ No yarn.lock found"
+
+      - name: Check for pnpm-lock.yaml
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "❌ ERROR: pnpm-lock.yaml detected (BANNED)"
+            exit 1
+          fi
+          echo "✅ No pnpm-lock.yaml found"
+
+      - name: Check for bun.lockb
+        run: |
+          if [ -f bun.lockb ]; then
+            echo "❌ ERROR: bun.lockb detected (BANNED)"
+            exit 1
+          fi
+          echo "✅ No bun.lockb found"
+
+      - name: Check for Makefile
+        run: |
+          if [ -f Makefile ] || [ -f makefile ] || [ -f GNUmakefile ]; then
+            echo "❌ ERROR: Makefile detected (BANNED)"
+            echo "Makefile is not allowed. Use justfile instead."
+            exit 1
+          fi
+          echo "✅ No Makefile found"
+
+      - name: Check for Go files
+        run: |
+          if find . -name "*.go" | grep -q .; then
+            echo "❌ ERROR: Go files detected (BANNED)"
+            echo "Go is not allowed. Use Rust instead."
+            find . -name "*.go"
+            exit 1
+          fi
+          echo "✅ No Go files found"
+
+      - name: Verify deno.json exists
+        run: |
+          if [ ! -f deno.json ]; then
+            echo "❌ ERROR: deno.json not found"
+            echo "This project requires Deno configuration."
+            exit 1
+          fi
+          echo "✅ deno.json found"
+
+      - name: Verify bsconfig.json exists
+        run: |
+          if [ ! -f bsconfig.json ]; then
+            echo "❌ ERROR: bsconfig.json not found"
+            echo "This project requires ReScript configuration."
+            exit 1
+          fi
+          echo "✅ bsconfig.json found"
+
+      - name: Verify justfile exists
+        run: |
+          if [ ! -f justfile ]; then
+            echo "❌ ERROR: justfile not found"
+            echo "This project requires a justfile for task running."
+            exit 1
+          fi
+          echo "✅ justfile found"
+
+      - name: Language policy check passed
+        run: |
+          echo "✅ All language policy checks passed!"
+          echo ""
+          echo "Allowed: ReScript, Deno, Rust, Bash, Nickel"
+          echo "Banned: TypeScript, Node.js, npm, Go, Makefile"

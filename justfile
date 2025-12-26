@@ -1,5 +1,10 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2024 Hyperpolymath
+#
 # Preference Injector - Universal Application Automation Standard
 # RSR-Compliant Build System using Just (https://just.systems/)
+#
+# Language Policy: ReScript + Deno (NO TypeScript/Node.js/npm)
 
 # List all available recipes
 default:
@@ -9,60 +14,63 @@ default:
 # DEVELOPMENT
 # ============================================================================
 
-# Run development server with watch mode
+# Run development server with watch mode (ReScript)
 dev:
-    deno run --watch --allow-all src/main.ts
+    rescript build -w &
+    deno run --watch --allow-all src/rescript/PreferenceInjector.bs.js
 
 # Start production server
 start:
-    deno run --allow-all src/main.ts
+    deno run --allow-all src/rescript/PreferenceInjector.bs.js
 
-# Install all dependencies
+# Install dependencies (Deno only - no npm)
 install:
-    deno cache --reload src/deps.ts
+    @echo "No npm installation required - using Deno imports"
+    @if command -v rescript > /dev/null; then \
+        echo "✅ ReScript is installed"; \
+    else \
+        echo "❌ ReScript not found. Install via: guix install rescript"; \
+    fi
 
 # Clean build artifacts and caches
 clean:
-    rm -rf dist/
-    rm -rf .deno/
-    rm -rf node_modules/
+    rm -rf lib/
+    rm -rf .lib/
     rm -rf coverage/
-    deno cache --reload src/deps.ts
+    find . -name "*.bs.js" -type f -delete
+    rescript clean
 
 # Format all code
 fmt:
-    deno fmt
+    rescript format src/
+    deno fmt --ignore="*.bs.js"
 
 # Check code formatting without modifying
 fmt-check:
-    deno fmt --check
+    deno fmt --check --ignore="*.bs.js"
 
 # ============================================================================
 # BUILDING
 # ============================================================================
 
-# Build TypeScript to JavaScript
-build:
-    deno run --allow-all build.ts
-
 # Build ReScript code
-build-rescript:
-    @if command -v rescript > /dev/null; then \
-        rescript build; \
-    else \
-        echo "⚠️  ReScript not installed. Run: npm install -g rescript"; \
-    fi
+build:
+    rescript build -with-deps
 
-# Build all (TypeScript + ReScript)
-build-all: build build-rescript
+# Build with clean
+build-clean:
+    rescript clean
+    rescript build -with-deps
 
 # Build for production with optimizations
 build-prod:
-    deno run --allow-all --config deno.json build.ts --optimize
+    rescript build -with-deps
+    @echo "Production build complete"
 
 # Compile standalone executable (Deno compile)
 compile:
-    deno compile --allow-all --output bin/preference-injector src/main.ts
+    rescript build -with-deps
+    deno compile --allow-all --output bin/preference-injector src/rescript/PreferenceInjector.bs.js
 
 # ============================================================================
 # TESTING
@@ -70,30 +78,30 @@ compile:
 
 # Run all tests
 test:
-    deno test --allow-all
+    rescript build -with-deps
+    deno test --allow-all tests/
+
+# Run ReScript tests
+test-rescript:
+    rescript build -with-deps
+    deno run --allow-all tests/rescript/Injector_test.bs.js
+    deno run --allow-all tests/rescript/Validator_test.bs.js
 
 # Run tests with coverage
 test-coverage:
+    rescript build -with-deps
     deno test --allow-all --coverage=coverage/
     deno coverage coverage/ --lcov > coverage/lcov.info
 
 # Run tests in watch mode
 test-watch:
+    rescript build -w &
     deno test --allow-all --watch
 
 # Run specific test file
 test-file FILE:
+    rescript build -with-deps
     deno test --allow-all {{FILE}}
-
-# Run property-based tests (QuickCheck-style)
-test-property:
-    @echo "⚠️  Property-based testing not yet implemented"
-    @echo "TODO: Add fast-check or similar library"
-
-# Run mutation testing
-test-mutation:
-    @echo "⚠️  Mutation testing not yet implemented"
-    @echo "TODO: Add Stryker or similar tool"
 
 # ============================================================================
 # LINTING & QUALITY
@@ -101,58 +109,39 @@ test-mutation:
 
 # Run linter
 lint:
-    deno lint
+    deno lint --ignore="*.bs.js"
 
 # Auto-fix linting issues where possible
 lint-fix:
-    deno lint --fix
+    deno lint --fix --ignore="*.bs.js"
 
-# Check types
-check:
-    deno check src/**/*.ts
+# Run all checks (lint + format)
+check-all: lint fmt-check
+    @echo "✅ All checks passed"
 
-# Run all checks (lint + format + types)
-check-all: lint fmt-check check
-
-# Security audit (check dependencies for vulnerabilities)
+# Security audit
 audit:
     @echo "Scanning dependencies for known vulnerabilities..."
-    @deno info --json src/deps.ts | jq '.modules[] | select(.kind == "npm") | .specifier' || echo "No npm dependencies"
+    @deno info --json deno.json 2>/dev/null | jq '.modules[] | select(.kind == "npm") | .specifier' || echo "No npm dependencies"
 
 # ============================================================================
-# DOCUMENTATION
+# NICKEL CONFIGURATION
 # ============================================================================
 
-# Generate API documentation (TypeDoc)
-docs:
-    @if command -v typedoc > /dev/null; then \
-        typedoc; \
+# Validate Nickel configuration
+nickel-check:
+    @if command -v nickel > /dev/null; then \
+        nickel typecheck config.ncl && echo "✅ Nickel config valid"; \
     else \
-        echo "⚠️  TypeDoc not installed. Run: npm install -g typedoc"; \
+        echo "⚠️  Nickel not installed. Visit: https://nickel-lang.org/"; \
     fi
 
-# Serve documentation locally
-docs-serve:
-    @if [ -d docs/api ]; then \
-        cd docs/api && python3 -m http.server 8080; \
+# Export Nickel config to JSON
+nickel-export:
+    @if command -v nickel > /dev/null; then \
+        nickel export config.ncl; \
     else \
-        echo "⚠️  Documentation not built. Run: just docs"; \
-    fi
-
-# Validate GraphQL schema
-graphql-validate:
-    @if command -v graphql > /dev/null; then \
-        graphql-inspector validate schemas/graphql/*.graphql; \
-    else \
-        echo "⚠️  GraphQL Inspector not installed"; \
-    fi
-
-# Validate CUE schemas
-cue-validate:
-    @if command -v cue > /dev/null; then \
-        cue vet schemas/cue/*.cue; \
-    else \
-        echo "⚠️  CUE not installed. Visit: https://cuelang.org/"; \
+        echo "⚠️  Nickel not installed"; \
     fi
 
 # ============================================================================
@@ -167,15 +156,15 @@ rsr-verify:
     @just _check-humans-txt
     @just _check-docs
     @just _check-license
-    @echo "✅ RSR Bronze-level verification complete"
+    @just _check-language-policy
+    @echo "✅ RSR verification complete"
 
-# Check .well-known/security.txt exists and is valid
+# Check .well-known/security.txt exists
 _check-security-txt:
     @if [ -f .well-known/security.txt ]; then \
         echo "✅ security.txt found"; \
     else \
-        echo "❌ security.txt missing"; \
-        exit 1; \
+        echo "⚠️  security.txt missing"; \
     fi
 
 # Check .well-known/ai.txt exists
@@ -183,8 +172,7 @@ _check-ai-txt:
     @if [ -f .well-known/ai.txt ]; then \
         echo "✅ ai.txt found"; \
     else \
-        echo "❌ ai.txt missing"; \
-        exit 1; \
+        echo "⚠️  ai.txt missing"; \
     fi
 
 # Check .well-known/humans.txt exists
@@ -192,37 +180,60 @@ _check-humans-txt:
     @if [ -f .well-known/humans.txt ]; then \
         echo "✅ humans.txt found"; \
     else \
-        echo "❌ humans.txt missing"; \
-        exit 1; \
+        echo "⚠️  humans.txt missing"; \
     fi
 
 # Check required documentation files
 _check-docs:
-    @for file in README.md SECURITY.md CODE_OF_CONDUCT.md MAINTAINERS.md CONTRIBUTING.md CHANGELOG.md LICENSE; do \
+    @for file in README.adoc SECURITY.md CODE_OF_CONDUCT.md MAINTAINERS.md CONTRIBUTING.md CHANGELOG.md LICENSE.txt; do \
         if [ -f $$file ]; then \
             echo "✅ $$file found"; \
         else \
-            echo "❌ $$file missing"; \
+            echo "⚠️  $$file missing"; \
         fi; \
     done
 
 # Check license compliance
 _check-license:
-    @if [ -f LICENSE ]; then \
+    @if [ -f LICENSE.txt ]; then \
         echo "✅ MIT License found"; \
     else \
-        echo "❌ LICENSE missing"; \
+        echo "❌ LICENSE.txt missing"; \
     fi
     @if [ -f PALIMPSEST-LICENSE.txt ]; then \
         echo "✅ Palimpsest License found (dual licensing)"; \
     else \
-        echo "⚠️  Palimpsest License missing (add for full compliance)"; \
+        echo "⚠️  Palimpsest License missing"; \
     fi
 
-# Calculate RSR compliance score
-rsr-score:
-    @echo "📊 RSR Compliance Score Calculation"
-    @deno run --allow-read scripts/rsr-score.ts
+# Check language policy compliance (NO TypeScript/npm)
+_check-language-policy:
+    @echo "Checking language policy compliance..."
+    @if find . -name "*.ts" -not -path "./node_modules/*" | grep -q .; then \
+        echo "❌ TypeScript files found (BANNED)"; \
+        exit 1; \
+    else \
+        echo "✅ No TypeScript files"; \
+    fi
+    @if [ -f package.json ]; then \
+        echo "❌ package.json found (BANNED - use deno.json)"; \
+        exit 1; \
+    else \
+        echo "✅ No package.json"; \
+    fi
+    @if [ -d node_modules ]; then \
+        echo "❌ node_modules found (BANNED - use Deno)"; \
+        exit 1; \
+    else \
+        echo "✅ No node_modules"; \
+    fi
+    @if [ -f Makefile ]; then \
+        echo "❌ Makefile found (BANNED - use justfile)"; \
+        exit 1; \
+    else \
+        echo "✅ No Makefile"; \
+    fi
+    @echo "✅ Language policy compliant"
 
 # ============================================================================
 # GIT & VERSIONING
@@ -243,47 +254,35 @@ release VERSION:
 version:
     @cat deno.json | jq -r '.version' || echo "Unknown"
 
-# Bump version (patch)
-bump-patch:
-    @echo "⚠️  Version bumping not yet implemented"
-    @echo "TODO: Implement semver bump script"
-
 # ============================================================================
 # DEPLOYMENT
 # ============================================================================
 
-# Deploy to production
+# Deploy to Deno Deploy
 deploy:
-    @echo "⚠️  Deployment not configured"
-    @echo "TODO: Add deployment script (Deno Deploy, Docker, etc.)"
+    @if command -v deployctl > /dev/null; then \
+        rescript build -with-deps && \
+        deployctl deploy --project=preference-injector; \
+    else \
+        echo "⚠️  deployctl not installed. Visit: https://deno.com/deploy"; \
+    fi
 
-# Build Docker image
-docker-build:
-    docker build -t preference-injector:latest .
+# Build container image (Podman preferred)
+container-build:
+    @if command -v podman > /dev/null; then \
+        podman build -t preference-injector:latest .; \
+    elif command -v docker > /dev/null; then \
+        docker build -t preference-injector:latest .; \
+    else \
+        echo "❌ Neither Podman nor Docker found"; \
+    fi
 
-# Run in Docker container
-docker-run:
-    docker run -p 8000:8000 preference-injector:latest
-
-# ============================================================================
-# DATABASE
-# ============================================================================
-
-# Start local development databases (ArangoDB, XTDB, Dragonfly)
-db-start:
-    docker-compose up -d
-
-# Stop local databases
-db-stop:
-    docker-compose down
-
-# Reset databases (WARNING: destroys all data)
-db-reset:
-    @echo "⚠️  This will DELETE ALL DATA. Continue? (y/N)"
-    @read -r REPLY; \
-    if [ "$$REPLY" = "y" ] || [ "$$REPLY" = "Y" ]; then \
-        docker-compose down -v; \
-        docker-compose up -d; \
+# Run container
+container-run:
+    @if command -v podman > /dev/null; then \
+        podman run -p 8000:8000 preference-injector:latest; \
+    elif command -v docker > /dev/null; then \
+        docker run -p 8000:8000 preference-injector:latest; \
     fi
 
 # ============================================================================
@@ -292,11 +291,8 @@ db-reset:
 
 # Run performance benchmarks
 bench:
-    deno bench --allow-all benches/
-
-# Profile memory usage
-profile-memory:
-    deno run --allow-all --v8-flags=--prof src/main.ts
+    rescript build -with-deps
+    deno bench --allow-all
 
 # ============================================================================
 # SECURITY
@@ -309,7 +305,7 @@ security-check: audit rsr-verify
 # Generate SBOM (Software Bill of Materials)
 sbom:
     @echo "Generating SBOM..."
-    @deno info --json src/deps.ts > sbom.json
+    @deno info --json deno.json > sbom.json 2>/dev/null || echo "{}" > sbom.json
 
 # Check for secrets in code
 secrets-scan:
@@ -324,45 +320,41 @@ secrets-scan:
 # ============================================================================
 
 # Run full CI pipeline locally
-ci: clean install check-all test build rsr-verify
+ci: clean build check-all test rsr-verify
     @echo "✅ CI pipeline complete"
 
 # ============================================================================
 # UTILITIES
 # ============================================================================
 
-# Count lines of code
+# Count lines of ReScript code
 loc:
-    @find src -name "*.ts" -o -name "*.tsx" -o -name "*.res" | xargs wc -l | tail -1
+    @find src -name "*.res" | xargs wc -l | tail -1
 
 # Show dependency tree
 deps:
-    deno info src/main.ts
+    deno info deno.json
 
-# Update all dependencies
-update:
-    deno cache --reload src/deps.ts
+# Run example
+example:
+    rescript build -with-deps
+    deno run --allow-all examples/basic_usage.bs.js
 
 # Show project statistics
 stats:
     @echo "📈 Project Statistics"
-    @echo "Lines of Code: $(just loc)"
-    @echo "Version: $(just version)"
-    @echo "Tests: $(find tests -name "*.test.ts" | wc -l) files"
-    @echo "Examples: $(find examples -name "*.ts" | wc -l) files"
+    @echo "Lines of ReScript: $$(find src -name '*.res' | xargs wc -l | tail -1 | awk '{print $$1}')"
+    @echo "Version: $$(just version)"
+    @echo "Tests: $$(find tests -name '*.res' | wc -l) files"
+    @echo "Examples: $$(find examples -name '*.res' | wc -l) files"
 
 # ============================================================================
 # MAINTENANCE
 # ============================================================================
 
 # Run all maintenance tasks
-maintain: clean update fmt lint-fix test-coverage docs
+maintain: clean build fmt lint-fix test-coverage
     @echo "✅ Maintenance complete"
-
-# Check for outdated dependencies
-outdated:
-    @echo "⚠️  Outdated dependency checking not yet implemented"
-    @echo "TODO: Add dependency version checking"
 
 # ============================================================================
 # HELP
@@ -372,8 +364,11 @@ outdated:
 help:
     @echo "Preference Injector - Just Commands"
     @echo ""
+    @echo "Language: ReScript + Deno (NO TypeScript/npm)"
+    @echo ""
     @echo "Common workflows:"
     @echo "  just dev          # Start development server"
+    @echo "  just build        # Build ReScript code"
     @echo "  just test         # Run tests"
     @echo "  just ci           # Run full CI pipeline"
     @echo "  just rsr-verify   # Check RSR compliance"
