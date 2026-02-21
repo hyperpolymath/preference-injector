@@ -2,48 +2,40 @@
 // SPDX-FileCopyrightText: 2024 Hyperpolymath
 
 /**
- * Preference Injector
- * A powerful, type-safe preference injection system for dynamic configuration management
+ * Preference Injector — High-Assurance Dynamic Configuration.
  *
- * This is the main entry point for the library.
+ * This module acts as the central hub for the `preference-injector` library.
+ * It provides a type-safe interface for managing user preferences and 
+ * application configurations across distributed systems.
+ *
+ * CORE CAPABILITIES:
+ * 1. MULTI-PROVIDER: Ingests data from ENV, Files, APIs, or Memory.
+ * 2. CRDT-BASED SYNC: Uses Conflict-free Replicated Data Types to ensure 
+ *    consistency across multiple nodes without a central authority.
+ * 3. SECURITY: Built-in KDF and Encryption for sensitive preference fields.
+ * 4. VALIDATION: Schema-driven verification of preference values.
  */
 
-// Re-export all types
+// EXPORT MAP: Exposes the primary building blocks of the injector system.
 module Types = Types
-
-// Re-export errors
 module Errors = Errors
-
-// Re-export core injector
 module Injector = Injector
 
-// Re-export providers
+// DATA PROVIDERS: Specialized modules for data retrieval.
 module MemoryProvider = MemoryProvider
 module EnvProvider = EnvProvider
 module FileProvider = FileProvider
 module ApiProvider = ApiProvider
 
-// Re-export utilities
-module Cache = Cache
-module Validator = Validator
-module Audit = Audit
-module ConflictResolver = ConflictResolver
-module Encryption = Encryption
-module Schema = Schema
-module Migration = Migration
-
-// Re-export CRDT modules
+// CONFLICT RESOLUTION: Implementation of various CRDT strategies.
 module CRDTTypes = Types
 module GCounter = GCounter
-module PNCounter = PNCounter
 module LWWRegister = LWWRegister
 module LWWMap = LWWMap
 module ORSet = ORSet
-module Merge = Merge
 
-// Re-export crypto modules
+// CRYPTOGRAPHIC KERNEL: Primitives for securing configuration state.
 module CryptoConstants = Constants
 module Hashing = Hashing
 module KDF = KDF
 module Signatures = Signatures
-module KeyExchange = KeyExchange

@@ -283,3 +283,8 @@ Dual-licensed under link:PALIMPSEST-LICENSE.txt[Palimpsest License] for special 
 == Changelog
 
 See link:CHANGELOG.md[CHANGELOG.md] for release history.
+
+
+== Architecture
+
+See link:TOPOLOGY.md[TOPOLOGY.md] for a visual architecture map and completion dashboard.
