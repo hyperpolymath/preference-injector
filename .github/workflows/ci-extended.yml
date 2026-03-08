@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
+permissions: read-all
+
 name: CI Extended (RSR Compliance)
 
 on:
@@ -14,7 +16,7 @@ jobs:
     name: RSR Framework Verification
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
@@ -53,7 +55,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         deno: ['1.x', 'canary']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
@@ -70,7 +72,7 @@ jobs:
     name: Security Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
@@ -95,7 +97,7 @@ jobs:
     name: Offline-First Verification
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
@@ -116,7 +118,7 @@ jobs:
     name: Nix Reproducible Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Install Nix
         uses: cachix/install-nix-action@v24
@@ -133,7 +135,7 @@ jobs:
     name: Build Documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -157,7 +159,7 @@ jobs:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
@@ -172,7 +174,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
@@ -189,7 +191,7 @@ jobs:
     name: Container Security Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Build Docker Image
         run: docker build -t preference-injector:${{ github.sha }} .

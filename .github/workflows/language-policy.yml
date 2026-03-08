@@ -4,6 +4,8 @@
 # Language Policy Enforcement Workflow
 # Rejects PRs that violate the Hyperpolymath Language Standard
 
+permissions: read-all
+
 name: Language Policy
 
 on:
@@ -17,7 +19,7 @@ jobs:
     name: Enforce Language Policy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Check for banned TypeScript files
         run: |
