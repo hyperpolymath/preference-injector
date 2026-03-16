@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Clade declaration — part of the gv-clade-index registry
+# See: https://github.com/hyperpolymath/gv-clade-index
+
+[identity]
+uuid = "acdc2b57-dc57-5df8-a4f0-a36d4e1fbff9"
+primary-forge = "github"
+primary-owner = "hyperpolymath"
+canonical-name = "preference-injector"
+prefixed-name = "ap-preference-injector"
+
+[clade]
+primary = "ap"
+secondary = []
+assigned = "2026-03-16"
+rationale = ""
+
+[forges]
+github = "hyperpolymath/preference-injector"
+gitlab = "hyperpolymath/preference-injector"
+bitbucket = "hyperpolymath/preference-injector"
+
+[lineage]
+type = "standalone"
+parent = "User preference injection tool"
+born = "2026-03-16"
