@@ -4,7 +4,8 @@
 # Language Policy Enforcement Workflow
 # Rejects PRs that violate the Hyperpolymath Language Standard
 
-permissions: read-all
+permissions:
+  contents: read
 
 name: Language Policy
 
