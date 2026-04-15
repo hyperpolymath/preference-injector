@@ -7,6 +7,8 @@
 # Language Policy: ReScript + Deno (NO TypeScript/Node.js/npm)
 
 # List all available recipes
+import? "contractile.just"
+
 default:
     @just --list
 
