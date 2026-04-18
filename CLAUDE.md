@@ -28,7 +28,7 @@ Built with **ReScript** and **Deno** following the Hyperpolymath Language Standa
 | npm/yarn/pnpm | Deno imports |
 | Bun | Deno |
 | Go | Rust |
-| Makefile | justfile |
+| Makefile | Justfile |
 
 ## Project Structure
 
@@ -47,7 +47,7 @@ preference-injector/
 ├── docs/                   # Documentation
 ├── deno.json               # Deno configuration
 ├── bsconfig.json           # ReScript configuration
-├── justfile                # Task runner (NOT Makefile)
+├── Justfile                # Task runner (NOT Makefile)
 ├── Mustfile.epx            # Deployment state contract
 └── config.ncl              # Nickel configuration
 ```
@@ -236,7 +236,7 @@ just ci           # Full CI pipeline
 just rsr-verify   # RSR compliance check
 ```
 
-**Do NOT use make/Makefile** - use justfile instead.
+**Do NOT use make/Makefile** - use Justfile instead.
 
 ## Additional Notes
 

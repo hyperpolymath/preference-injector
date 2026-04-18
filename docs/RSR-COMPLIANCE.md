@@ -10,7 +10,7 @@
 | **2. Memory Safety** | ⚠️ 40% | ❌ 0% | ❌ 0% | ❌ 0% | **40%** | Deno sandbox, no unsafe code, but no Rust/Ada |
 | **3. Offline-First** | ❌ 0% | ❌ 0% | ❌ 0% | ❌ 0% | **0%** | GraphQL requires network, no offline sync |
 | **4. Documentation** | ⚠️ 60% | ❌ 0% | ❌ 0% | ❌ 0% | **60%** | Missing SECURITY.md, CODE_OF_CONDUCT.md, MAINTAINERS.md |
-| **5. Build System** | ⚠️ 40% | ❌ 0% | ❌ 0% | ❌ 0% | **40%** | deno.json only, no justfile or flake.nix |
+| **5. Build System** | ⚠️ 40% | ❌ 0% | ❌ 0% | ❌ 0% | **40%** | deno.json only, no Justfile or flake.nix |
 | **6. Testing** | ⚠️ 50% | ❌ 0% | ❌ 0% | ❌ 0% | **50%** | Unit tests exist but incomplete coverage |
 | **7. Security** | ⚠️ 30% | ❌ 0% | ❌ 0% | ❌ 0% | **30%** | Post-quantum planned but not implemented |
 | **8. .well-known/** | ❌ 0% | ❌ 0% | ❌ 0% | ❌ 0% | **0%** | Missing security.txt, ai.txt, humans.txt |
@@ -33,7 +33,7 @@
 ### ❌ Currently Failing (7/11)
 1. ❌ **Memory Safety**: Need Rust/Ada core or explicit WASM sandboxing
 2. ❌ **Offline-First**: GraphQL API requires network, no local-first architecture
-3. ❌ **Build System**: Missing justfile and flake.nix
+3. ❌ **Build System**: Missing Justfile and flake.nix
 4. ❌ **Security**: Missing SECURITY.md and .well-known/ directory
 5. ❌ **Post-Quantum Crypto**: Designed but not implemented
 6. ❌ **TPCF**: No tri-perimeter framework or governance model
@@ -50,7 +50,7 @@
 - [ ] Create .well-known/security.txt (RFC 9116)
 - [ ] Create .well-known/ai.txt (AI training policies)
 - [ ] Create .well-known/humans.txt (attribution)
-- [ ] Add justfile with 20+ recipes
+- [ ] Add Justfile with 20+ recipes
 - [ ] Add flake.nix for reproducible Nix builds
 - [ ] Implement offline-first architecture with IndexedDB/OPFS
 - [ ] Add dual MIT + Palimpsest v0.8 licensing
@@ -128,7 +128,7 @@ The reference implementation shows:
 1. **Run compliance check**: `deno run scripts/rsr-verify.ts`
 2. **Add missing docs**: Start with SECURITY.md and CODE_OF_CONDUCT.md
 3. **Create .well-known/**: security.txt is RFC standard
-4. **Add justfile**: Port npm scripts to just recipes
+4. **Add Justfile**: Port npm scripts to just recipes
 5. **Implement offline mode**: IndexedDB for local-first storage
 
 ---
