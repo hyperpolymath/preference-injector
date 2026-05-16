@@ -26,7 +26,7 @@ jobs:
         run: |
           if find . -name "*.ts" -not -path "./node_modules/*" | grep -q .; then
             echo "❌ ERROR: TypeScript files detected (BANNED)"
-            echo "TypeScript is not allowed in this project. Use ReScript instead."
+            echo "TypeScript is not allowed in this project. Use AffineScript instead."
             find . -name "*.ts" -not -path "./node_modules/*"
             exit 1
           fi
@@ -36,7 +36,7 @@ jobs:
         run: |
           if find . -name "*.tsx" -not -path "./node_modules/*" | grep -q .; then
             echo "❌ ERROR: TSX files detected (BANNED)"
-            echo "TSX is not allowed in this project. Use ReScript instead."
+            echo "TSX is not allowed in this project. Use AffineScript instead."
             find . -name "*.tsx" -not -path "./node_modules/*"
             exit 1
           fi
