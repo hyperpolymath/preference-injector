@@ -10,7 +10,7 @@
   title = {preference-injector},
   year = {2026},
   url = {https://github.com/hyperpolymath/preference-injector},
-  license = {PMPL-1.0-or-later}
+  license = {MPL-2.0}
 }
 ----
 
