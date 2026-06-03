@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // SPDX-FileCopyrightText: 2024 Hyperpolymath
 = Preference Injector
+image:https://img.shields.io/badge/OpenSSF-Best_Practices-green?logo=openssourcesecurity[OpenSSF Best Practices,link="https://www.bestpractices.dev/en/projects/new?repo_url=https://github.com/hyperpolymath/preference-injector"]
 
-image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[License: MPL-2.0,link="https://opensource.org/licenses/MPL-2.0"]
 
 A powerful, type-safe preference injection system for dynamic configuration management.
 
@@ -276,9 +279,9 @@ Contributions are welcome! Please see link:CONTRIBUTING.md[CONTRIBUTING.md] for 
 
 == License
 
-MIT - See link:LICENSE.txt[LICENSE.txt]
+This project is licensed under the Mozilla Public License, v. 2.0. See the `LICENSE` file for details.
 
-Dual-licensed under link:PALIMPSEST-LICENSE.txt[Palimpsest License] for special use cases.
+SPDX-License-Identifier: MPL-2.0
 
 == Changelog
 
