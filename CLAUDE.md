@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Preference Injector
 
 ## Project Overview
@@ -12,7 +16,7 @@ Built with **ReScript** and **Deno** following the Hyperpolymath Language Standa
 
 | Language/Tool | Use Case |
 |---------------|----------|
-| **ReScript** | Primary application code |
+| **AffineScript** | Primary application code |
 | **Deno** | Runtime & package management |
 | **Rust** | Performance-critical extensions |
 | **Bash/POSIX Shell** | Scripts, automation |
@@ -23,7 +27,7 @@ Built with **ReScript** and **Deno** following the Hyperpolymath Language Standa
 
 | Banned | Replacement |
 |--------|-------------|
-| TypeScript | ReScript |
+| TypeScript | AffineScript |
 | Node.js | Deno |
 | npm/yarn/pnpm | Deno imports |
 | Bun | Deno |

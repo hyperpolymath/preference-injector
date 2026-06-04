@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Contributing to Preference Injector
 
 Thank you for your interest in contributing to Preference Injector! This document provides guidelines and instructions for contributing.

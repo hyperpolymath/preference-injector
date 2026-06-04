@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // Template: QUICKSTART-DEV.adoc — clone → build → test → PR
 // Replace preference-injector, {{BUILD_CMD}}, {{TEST_CMD}}, {{LANG_STACK}} with actuals
 = preference-injector — Quick Start for Developers
