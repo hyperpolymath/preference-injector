@@ -1,6 +1,7 @@
 {
   "name": "@hyperpolymath/preference-injector",
   "version": "2.0.0",
+  "exports": "./src/rescript/PreferenceInjector.bs.js",
   "tasks": {
     "dev": "deno run --watch --allow-all src/rescript/PreferenceInjector.bs.js",
     "start": "deno run --allow-all src/rescript/PreferenceInjector.bs.js",
@@ -22,7 +23,10 @@
     "pqc-kyber": "npm:pqc-kyber@1.0.0"
   },
   "compilerOptions": {
-    "lib": ["deno.window", "deno.unstable"],
+    "lib": [
+      "deno.window",
+      "deno.unstable"
+    ],
     "strict": true,
     "allowJs": true,
     "checkJs": false
@@ -34,16 +38,34 @@
     "semiColons": true,
     "singleQuote": true,
     "proseWrap": "preserve",
-    "include": ["src/", "tests/", "examples/", "scripts/"],
-    "exclude": ["*.bs.js"]
+    "include": [
+      "src/",
+      "tests/",
+      "examples/",
+      "scripts/"
+    ],
+    "exclude": [
+      "*.bs.js"
+    ]
   },
   "lint": {
     "rules": {
-      "tags": ["recommended"],
-      "exclude": ["no-unused-vars"]
+      "tags": [
+        "recommended"
+      ],
+      "exclude": [
+        "no-unused-vars"
+      ]
     },
-    "include": ["src/", "tests/", "examples/", "scripts/"],
-    "exclude": ["*.bs.js"]
+    "include": [
+      "src/",
+      "tests/",
+      "examples/",
+      "scripts/"
+    ],
+    "exclude": [
+      "*.bs.js"
+    ]
   },
   "lock": false
 }
