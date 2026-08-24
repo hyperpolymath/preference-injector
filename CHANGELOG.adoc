@@ -1,88 +1,89 @@
-// SPDX-License-Identifier: CC-BY-SA-4.0
-// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= Changelog
+== Changelog
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on https://keepachangelog.com/en/1.0.0/[Keep a
+Changelog], and this project adheres to
+https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
-== [1.0.0] - 2024-01-XX
+=== [1.0.0] - 2024-01-XX
 
-=== Added
+==== Added
 
-- Core preference injection system with type safety
-- Multiple provider support:
-  - In-memory provider
-  - File-based provider (JSON and .env formats)
-  - Environment variable provider
-  - API-based provider
-- Priority-based conflict resolution with multiple strategies
-- Caching system with LRU and TTL implementations
-- Validation system with common validation rules
-- Schema-based validation
-- AES-256-GCM encryption for sensitive preferences
-- Audit logging with multiple implementations
-- Migration system for versioned preferences
-- React integration with hooks and context provider
-- Express.js middleware and REST API
-- CLI tool for preference management
-- Comprehensive TypeScript type definitions
-- Event system for preference changes
-- Full test suite with >80% coverage
-- Complete documentation and examples
+* Core preference injection system with type safety
+* Multiple provider support:
+** In-memory provider
+** File-based provider (JSON and .env formats)
+** Environment variable provider
+** API-based provider
+* Priority-based conflict resolution with multiple strategies
+* Caching system with LRU and TTL implementations
+* Validation system with common validation rules
+* Schema-based validation
+* AES-256-GCM encryption for sensitive preferences
+* Audit logging with multiple implementations
+* Migration system for versioned preferences
+* React integration with hooks and context provider
+* Express.js middleware and REST API
+* CLI tool for preference management
+* Comprehensive TypeScript type definitions
+* Event system for preference changes
+* Full test suite with >80% coverage
+* Complete documentation and examples
 
-=== Features
+==== Features
 
-==== Core Features
+===== Core Features
 
-- **Type-Safe API**: Full TypeScript support with generic type helpers
-- **Multiple Providers**: Use file, environment, API, and memory providers together
-- **Priority System**: Resolve conflicts with customizable strategies
-- **Performance**: Built-in caching with configurable TTL
-- **Security**: AES-256-GCM encryption for sensitive data
-- **Validation**: Schema-based and custom validation rules
-- **Auditing**: Track all preference operations
-- **Migrations**: Version and migrate preference schemas
-- **Events**: Subscribe to preference changes
+* *Type-Safe API*: Full TypeScript support with generic type helpers
+* *Multiple Providers*: Use file, environment, API, and memory providers
+together
+* *Priority System*: Resolve conflicts with customizable strategies
+* *Performance*: Built-in caching with configurable TTL
+* *Security*: AES-256-GCM encryption for sensitive data
+* *Validation*: Schema-based and custom validation rules
+* *Auditing*: Track all preference operations
+* *Migrations*: Version and migrate preference schemas
+* *Events*: Subscribe to preference changes
 
-==== Framework Integrations
+===== Framework Integrations
 
-- **React**: Hooks (`usePreference`, `usePreferences`) and context provider
-- **Express**: Middleware and RESTful API router
-- **CLI**: Command-line tool for management
+* *React*: Hooks (`+usePreference+`, `+usePreferences+`) and context
+provider
+* *Express*: Middleware and RESTful API router
+* *CLI*: Command-line tool for management
 
-=== Documentation
+==== Documentation
 
-- Comprehensive README with quick start guide
-- API documentation
-- Usage examples for all major features
-- Contributing guidelines
-- CLAUDE.md for AI assistant integration
+* Comprehensive README with quick start guide
+* API documentation
+* Usage examples for all major features
+* Contributing guidelines
+* CLAUDE.md for AI assistant integration
 
-=== Developer Experience
+==== Developer Experience
 
-- ESLint and Prettier configuration
-- Jest testing framework
-- TypeDoc API documentation generation
-- GitHub Actions CI/CD pipeline
-- Automated testing and coverage reporting
+* ESLint and Prettier configuration
+* Jest testing framework
+* TypeDoc API documentation generation
+* GitHub Actions CI/CD pipeline
+* Automated testing and coverage reporting
 
-== [Unreleased]
+=== [Unreleased]
 
-=== Planned
+==== Planned
 
-- Redis provider for distributed caching
-- MongoDB provider for persistent storage
-- Vue.js integration
-- Angular integration
-- GraphQL API support
-- WebSocket real-time sync
-- Preference versioning UI
-- Advanced conflict resolution strategies
-- Multi-tenant support
-- Internationalization support
+* Redis provider for distributed caching
+* MongoDB provider for persistent storage
+* Vue.js integration
+* Angular integration
+* GraphQL API support
+* WebSocket real-time sync
+* Preference versioning UI
+* Advanced conflict resolution strategies
+* Multi-tenant support
+* Internationalization support
 
----
+'''''
 
-For more information, see the [README](README.md).
+For more information, see the link:README.md[README].
