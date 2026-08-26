@@ -70,7 +70,7 @@ echo "  ⚠️  Gold: 0/20 points (Full offline)"
 echo ""
 echo "4. Documentation"
 docs_missing=0
-for file in README.md SECURITY.md CODE_OF_CONDUCT.md MAINTAINERS.md CONTRIBUTING.md CHANGELOG.md LICENSE; do
+for file in README.md SECURITY.md CODE_OF_CONDUCT.md MAINTAINERS.adoc CONTRIBUTING.md CHANGELOG.md LICENSE; do
   [ ! -f "$file" ] && docs_missing=1
 done
 if [ $docs_missing -eq 0 ]; then
@@ -166,7 +166,7 @@ total_bronze=$((total_bronze + 100))
 # 9. TPCF
 echo ""
 echo "9. TPCF"
-if [ -f "MAINTAINERS.md" ] && grep -q "Perimeter" MAINTAINERS.md; then
+if [ -f "MAINTAINERS.adoc" ] && grep -q "Perimeter" MAINTAINERS.adoc; then
   echo "  ✅ Bronze: 50/50 points"
   earned_bronze=$((earned_bronze + 50))
 else
