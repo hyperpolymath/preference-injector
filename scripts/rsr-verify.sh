@@ -138,7 +138,7 @@ fi
 total_bronze=$((total_bronze + 30))
 
 # Check for post-quantum crypto implementation
-if [ -n "$(git ls-files 'src/**/crypto/Signatures.affine' 2>/dev/null)" ] && [ -n "$(git ls-files 'src/**/crypto/KeyExchange.affine' 2>/dev/null)" ] && [ -f "src/crypto/hashing.ts" ]; then
+if [ -n "$(git ls-files 'src/**/crypto/Signatures.affine' 2>/dev/null)" ] && [ -n "$(git ls-files 'src/**/crypto/KeyExchange.affine' 2>/dev/null)" ] && [ -n "$(git ls-files 'src/**/crypto/Hashing.affine' 2>/dev/null)" ]; then
   echo "  ✅ Silver: 40/40 points"
   earned_silver=$((earned_silver + 40))
 else
