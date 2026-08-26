@@ -17,7 +17,7 @@ Built with **ReScript** and **Deno** following the Hyperpolymath Language Standa
 | Language/Tool | Use Case |
 |---------------|----------|
 | **AffineScript** | Primary application code |
-| **Bun** | JS/TS runtime & package management (tier 1) |
+| **Bun** | JS runtime & package management (tier 1) |
 | **Rust** | Performance-critical extensions |
 | **Bash/POSIX Shell** | Scripts, automation |
 | **Nickel** | Configuration language |
@@ -28,6 +28,7 @@ Built with **ReScript** and **Deno** following the Hyperpolymath Language Standa
 | Banned | Replacement |
 |--------|-------------|
 | TypeScript | AffineScript |
+| Deno | Bun |
 | Node.js | Bun |
 | npm/yarn/pnpm | Bun (package.json + bun.lock) |
 | Go | Rust |
