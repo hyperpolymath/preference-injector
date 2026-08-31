@@ -28,6 +28,7 @@ Built with **ReScript** and **Deno** following the Hyperpolymath Language Standa
 | Banned | Replacement |
 |--------|-------------|
 | TypeScript | AffineScript |
+| ReScript | AffineScript |
 | Deno | Bun |
 | Node.js | Bun |
 | npm/yarn/pnpm | Bun (package.json + bun.lock) |
