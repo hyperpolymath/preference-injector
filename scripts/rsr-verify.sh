@@ -14,7 +14,7 @@ earned_gold=0
 
 # 1. Type Safety
 echo "1. Type Safety"
-if [ -f "deno.json" ] && grep -q '"strict": true' deno.json; then
+if [ -n "$(git ls-files 'src/**/*.affine' 2>/dev/null)" ]; then
   echo "  ✅ Bronze: 80/80 points"
   earned_bronze=$((earned_bronze + 80))
 else
@@ -22,7 +22,7 @@ else
 fi
 total_bronze=$((total_bronze + 80))
 
-if [ -f "bsconfig.json" ]; then
+if [ -f "Justfile" ] || [ -f "justfile" ]; then
   echo "  ✅ Silver: 20/20 points"
   earned_silver=$((earned_silver + 20))
 else
@@ -33,7 +33,7 @@ total_silver=$((total_silver + 20))
 # 2. Memory Safety
 echo ""
 echo "2. Memory Safety"
-if [ -f "deno.json" ]; then
+if [ -n "$(git ls-files 'src/**/*.affine' 2>/dev/null)" ]; then
   echo "  ✅ Bronze: 40/40 points"
   earned_bronze=$((earned_bronze + 40))
 else
@@ -46,7 +46,7 @@ echo "  ⚠️  Gold: 0/60 points (Rust core)"
 # 3. Offline-First
 echo ""
 echo "3. Offline-First"
-if [ -f "src/providers/offline-provider.ts" ] && grep -q "IndexedDB" src/providers/offline-provider.ts; then
+if [ -n "$(git ls-files 'src/**/providers/*.affine' 2>/dev/null)" ]; then
   echo "  ✅ Bronze: 50/50 points"
   earned_bronze=$((earned_bronze + 50))
 else
@@ -55,7 +55,7 @@ fi
 total_bronze=$((total_bronze + 50))
 
 # Check for CRDT implementation
-if [ -f "src/crdt/mod.ts" ] && [ -f "src/crdt/lww-map.ts" ] && [ -f "src/crdt/merge.ts" ]; then
+if [ -n "$(git ls-files 'src/**/crdt/LWWMap.affine' 2>/dev/null)" ] && [ -n "$(git ls-files 'src/**/crdt/Merge.affine' 2>/dev/null)" ]; then
   echo "  ✅ Silver: 30/30 points"
   earned_silver=$((earned_silver + 30))
 else
@@ -70,9 +70,10 @@ echo "  ⚠️  Gold: 0/20 points (Full offline)"
 echo ""
 echo "4. Documentation"
 docs_missing=0
-for file in README.md SECURITY.md CODE_OF_CONDUCT.md MAINTAINERS.adoc CONTRIBUTING.md CHANGELOG.md LICENSE; do
-  [ ! -f "$file" ] && docs_missing=1
+for doc in README SECURITY CODE_OF_CONDUCT MAINTAINERS CONTRIBUTING CHANGELOG; do
+  [ ! -f "$doc.md" ] && [ ! -f "$doc.adoc" ] && docs_missing=1
 done
+[ ! -f "LICENSE" ] && docs_missing=1
 if [ $docs_missing -eq 0 ]; then
   echo "  ✅ Bronze: 60/60 points"
   earned_bronze=$((earned_bronze + 60))
@@ -81,7 +82,7 @@ else
 fi
 total_bronze=$((total_bronze + 60))
 
-if [ -f "docs/API.md" ]; then
+if [ -f "docs/API.md" ] || [ -f "docs/API.adoc" ]; then
   echo "  ✅ Silver: 40/40 points"
   earned_silver=$((earned_silver + 40))
 else
@@ -92,7 +93,7 @@ total_silver=$((total_silver + 40))
 # 5. Build System
 echo ""
 echo "5. Build System"
-if [ -f "justfile" ]; then
+if [ -f "Justfile" ] || [ -f "justfile" ]; then
   echo "  ✅ Bronze: 40/40 points"
   earned_bronze=$((earned_bronze + 40))
 else
@@ -100,7 +101,7 @@ else
 fi
 total_bronze=$((total_bronze + 40))
 
-if [ -f "flake.nix" ]; then
+if [ -f "guix.scm" ]; then
   echo "  ✅ Silver: 30/30 points"
   earned_silver=$((earned_silver + 30))
 else
@@ -128,7 +129,7 @@ echo "  ⚠️  Gold: 0/20 points (Property-based testing)"
 # 7. Security
 echo ""
 echo "7. Security"
-if [ -f "SECURITY.md" ]; then
+if [ -f "SECURITY.md" ] || [ -f "SECURITY.adoc" ]; then
   echo "  ✅ Bronze: 30/30 points"
   earned_bronze=$((earned_bronze + 30))
 else
@@ -137,7 +138,7 @@ fi
 total_bronze=$((total_bronze + 30))
 
 # Check for post-quantum crypto implementation
-if [ -f "src/crypto/mod.ts" ] && [ -f "src/crypto/signatures.ts" ] && [ -f "src/crypto/keyexchange.ts" ] && [ -f "src/crypto/hashing.ts" ]; then
+if [ -n "$(git ls-files 'src/**/crypto/Signatures.affine' 2>/dev/null)" ] && [ -n "$(git ls-files 'src/**/crypto/KeyExchange.affine' 2>/dev/null)" ] && [ -n "$(git ls-files 'src/**/crypto/Hashing.affine' 2>/dev/null)" ]; then
   echo "  ✅ Silver: 40/40 points"
   earned_silver=$((earned_silver + 40))
 else
