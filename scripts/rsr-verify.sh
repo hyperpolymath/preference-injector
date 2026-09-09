@@ -12,6 +12,118 @@ earned_silver=0
 total_gold=0
 earned_gold=0
 
+capability_evidence_manifest=${RSR_CAPABILITY_EVIDENCE_MANIFEST:-scripts/rsr-capability-evidence.tsv}
+
+# A capability needs tracked, executable AffineScript in every implementation
+# and behavior-test path declared for it in the evidence manifest. Module/type
+# declarations and comments (including TODOs) are not implementation evidence.
+has_executable_affine_code() {
+  awk '
+    function trim(value) {
+      sub(/^[[:space:]]+/, "", value)
+      sub(/[[:space:]]+$/, "", value)
+      return value
+    }
+
+    {
+      line = $0
+      code = ""
+
+      # Remove line and block comments before looking for executable syntax.
+      while (length(line) > 0) {
+        if (in_block_comment) {
+          comment_end = index(line, "*/")
+          if (!comment_end) {
+            line = ""
+            continue
+          }
+          line = substr(line, comment_end + 2)
+          in_block_comment = 0
+          continue
+        }
+
+        block_start = index(line, "/*")
+        line_comment = index(line, "//")
+        if (line_comment && (!block_start || line_comment < block_start)) {
+          code = code substr(line, 1, line_comment - 1)
+          line = ""
+        } else if (block_start) {
+          code = code substr(line, 1, block_start - 1)
+          line = substr(line, block_start + 2)
+          in_block_comment = 1
+        } else {
+          code = code line
+          line = ""
+        }
+      }
+
+      code = trim(code)
+      if (!length(code)) {
+        next
+      }
+
+      # Assignments, function bodies, control flow, and calls are executable.
+      if (code ~ /^(export[[:space:]]+)?(let|const|var)[[:space:]].*=/ ||
+          code ~ /^(export[[:space:]]+)?(async[[:space:]]+)?(fn|function|def)[[:space:]].*(=>|=|\{)/ ||
+          code ~ /(^|[^=])=>/ ||
+          code ~ /^(return|yield|match|if|for|while)[[:space:]({]/ ||
+          code ~ /^[[:alnum:]_.]+[[:space:]]*\(.*\)[[:space:]]*;?$/) {
+        executable = 1
+      }
+    }
+
+    END { exit(executable ? 0 : 1) }
+  ' "$1"
+}
+
+tracked_pathspec_has_evidence() {
+  local pathspec=$1
+  local path
+
+  while IFS= read -r -d '' path; do
+    if has_executable_affine_code "$path"; then
+      return 0
+    fi
+  done < <(git grep -l -z -e '' -- "$pathspec" 2>/dev/null)
+
+  return 1
+}
+
+capability_has_evidence() {
+  local requested_capability=$1
+  local capability evidence_kind pathspec extra
+  local found_implementation=0
+  local found_behavior_test=0
+  local valid=1
+
+  [ -f "$capability_evidence_manifest" ] || return 1
+
+  while IFS='|' read -r capability evidence_kind pathspec extra; do
+    case "$capability" in
+      ''|'#'*) continue ;;
+    esac
+    [ "$capability" = "$requested_capability" ] || continue
+
+    # Reject malformed rows instead of silently weakening the evidence rules.
+    if [ -n "$extra" ] || [ -z "$pathspec" ]; then
+      valid=0
+      continue
+    fi
+
+    case "$evidence_kind" in
+      implementation) found_implementation=1 ;;
+      behavior-test) found_behavior_test=1 ;;
+      *) valid=0; continue ;;
+    esac
+
+    tracked_pathspec_has_evidence "$pathspec" || valid=0
+  done < "$capability_evidence_manifest"
+
+  [ "$valid" -eq 1 ] &&
+    [ "$found_implementation" -eq 1 ] &&
+    [ "$found_behavior_test" -eq 1 ]
+}
+
 # 1. Type Safety
 echo "1. Type Safety"
 if [ -n "$(git ls-files 'src/**/*.affine' 2>/dev/null)" ]; then
@@ -46,7 +158,7 @@ echo "  ⚠️  Gold: 0/60 points (Rust core)"
 # 3. Offline-First
 echo ""
 echo "3. Offline-First"
-if [ -n "$(git ls-files 'src/**/providers/*.affine' 2>/dev/null)" ]; then
+if capability_has_evidence "affine-provider"; then
   echo "  ✅ Bronze: 50/50 points"
   earned_bronze=$((earned_bronze + 50))
 else
@@ -55,7 +167,7 @@ fi
 total_bronze=$((total_bronze + 50))
 
 # Check for CRDT implementation
-if [ -n "$(git ls-files 'src/**/crdt/LWWMap.affine' 2>/dev/null)" ] && [ -n "$(git ls-files 'src/**/crdt/Merge.affine' 2>/dev/null)" ]; then
+if capability_has_evidence "crdt-sync"; then
   echo "  ✅ Silver: 30/30 points"
   earned_silver=$((earned_silver + 30))
 else
