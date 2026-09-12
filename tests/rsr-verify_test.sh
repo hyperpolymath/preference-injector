@@ -34,6 +34,7 @@ git -C "$fixture" add .
 
 # Run the fixture verifier and return only its Offline-First score section.
 offline_result() {
+  git -C "$fixture" add -A
   (cd "$fixture" && bash scripts/rsr-verify.sh) |
     sed -n '/3. Offline-First/,/4. Documentation/p'
 }
@@ -55,8 +56,6 @@ assert_contains "$result" '⚠️  Silver: 0/30 points (CRDT sync)'
 
 printf 'module FileProvider;\nlet load = (path) => readPreferences(path);\n' \
   > "$fixture/src/rescript/providers/FileProvider.affine"
-result=$(offline_result)
-assert_contains "$result" '❌ Bronze: 0/50 points'
 
 printf 'module Provider_test;\ntype Fixture = { path: String };\n' \
   > "$fixture/tests/rescript/Provider_test.affine"
@@ -65,6 +64,31 @@ assert_contains "$result" '❌ Bronze: 0/50 points'
 
 printf 'module Provider_test;\ntestProviderLoadsOffline();\n' \
   > "$fixture/tests/rescript/Provider_test.affine"
+result=$(offline_result)
+assert_contains "$result" '✅ Bronze: 50/50 points'
+
+printf 'module FileProvider;\ntype Loader = (path: String) => Preferences;\n' \
+  > "$fixture/src/rescript/providers/FileProvider.affine"
+result=$(offline_result)
+assert_contains "$result" '❌ Bronze: 0/50 points'
+
+printf 'module FileProvider;\nlet loader: (path: String) => Preferences;\n' \
+  > "$fixture/src/rescript/providers/FileProvider.affine"
+result=$(offline_result)
+assert_contains "$result" '❌ Bronze: 0/50 points'
+
+printf 'module FileProvider;\nfn load(path) {}\n' \
+  > "$fixture/src/rescript/providers/FileProvider.affine"
+result=$(offline_result)
+assert_contains "$result" '❌ Bronze: 0/50 points'
+
+printf 'module FileProvider;\nfn load(path) {\n  TODO: implement\n}\n' \
+  > "$fixture/src/rescript/providers/FileProvider.affine"
+result=$(offline_result)
+assert_contains "$result" '❌ Bronze: 0/50 points'
+
+printf 'module FileProvider;\nfn load(path) {\n  readPreferences(path);\n}\n' \
+  > "$fixture/src/rescript/providers/FileProvider.affine"
 result=$(offline_result)
 assert_contains "$result" '✅ Bronze: 50/50 points'
 

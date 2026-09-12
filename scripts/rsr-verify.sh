@@ -25,6 +25,28 @@ has_executable_affine_code() {
       return value
     }
 
+    function braces_delta(value, opens, closes) {
+      opens = gsub(/\{/, "", value)
+      closes = gsub(/\}/, "", value)
+      return opens - closes
+    }
+
+    function has_executable_function_body(body, normalized) {
+      normalized = body
+      gsub(/[{};]/, "", normalized)
+      normalized = trim(normalized)
+
+      # Empty and TODO-only function bodies are declarations, not evidence.
+      return length(normalized) &&
+        normalized !~ /^TODO([[:space:]]|:|_|-|\(|$)/
+    }
+
+    function is_assignment(code, without_arrows) {
+      without_arrows = code
+      gsub(/=>/, "", without_arrows)
+      return without_arrows ~ /^(export[[:space:]]+)?(let|const|var)[[:space:]].*=/
+    }
+
     {
       line = $0
       code = ""
@@ -62,10 +84,48 @@ has_executable_affine_code() {
         next
       }
 
-      # Assignments, function bodies, control flow, and calls are executable.
-      if (code ~ /^(export[[:space:]]+)?(let|const|var)[[:space:]].*=/ ||
-          code ~ /^(export[[:space:]]+)?(async[[:space:]]+)?(fn|function|def)[[:space:]].*(=>|=|\{)/ ||
-          code ~ /(^|[^=])=>/ ||
+      if (in_function_body) {
+        function_body = function_body "\n" code
+        function_brace_depth += braces_delta(code)
+        if (function_brace_depth <= 0) {
+          if (has_executable_function_body(function_body)) {
+            executable = 1
+          }
+          in_function_body = 0
+          function_body = ""
+        }
+        next
+      }
+
+      # Function declarations need an executable body. In particular, do not
+      # treat an empty or TODO-only body as implementation evidence.
+      if (code ~ /^(export[[:space:]]+)?(async[[:space:]]+)?(fn|function|def)[[:space:]]/) {
+        arrow = index(code, "=>")
+        open_brace = index(code, "{")
+        equals = index(code, "=")
+
+        if (arrow) {
+          function_body = substr(code, arrow + 2)
+        } else if (open_brace) {
+          function_body = substr(code, open_brace)
+        } else if (equals) {
+          function_body = substr(code, equals + 1)
+        } else {
+          next
+        }
+
+        function_brace_depth = braces_delta(function_body)
+        if (function_brace_depth > 0) {
+          in_function_body = 1
+        } else if (has_executable_function_body(function_body)) {
+          executable = 1
+        }
+        next
+      }
+
+      # Assignments, control flow, and calls are executable. A bare arrow is
+      # deliberately not enough: type aliases and declarations use it too.
+      if (is_assignment(code) ||
           code ~ /^(return|yield|match|if|for|while)[[:space:]({]/ ||
           code ~ /^[[:alnum:]_.]+[[:space:]]*\(.*\)[[:space:]]*;?$/) {
         executable = 1
