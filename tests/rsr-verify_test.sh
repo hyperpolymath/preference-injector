@@ -15,6 +15,7 @@ mkdir -p \
 cp "$repo_root/scripts/rsr-verify.sh" "$fixture/scripts/"
 cp "$repo_root/scripts/rsr-capability-evidence.tsv" "$fixture/scripts/"
 
+# Write a declaration-only AffineScript fixture that must not count as evidence.
 write_declaration_only() {
   local path=$1
   local module=$2
@@ -31,11 +32,13 @@ write_declaration_only "$fixture/tests/rescript/CRDT_test.affine" CRDT_test
 git -C "$fixture" init -q
 git -C "$fixture" add .
 
+# Run the fixture verifier and return only its Offline-First score section.
 offline_result() {
   (cd "$fixture" && bash scripts/rsr-verify.sh) |
     sed -n '/3. Offline-First/,/4. Documentation/p'
 }
 
+# Fail the test when the supplied output does not contain the expected text.
 assert_contains() {
   local output=$1
   local expected=$2

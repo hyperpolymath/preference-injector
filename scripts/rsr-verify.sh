@@ -76,6 +76,7 @@ has_executable_affine_code() {
   ' "$1"
 }
 
+# Return success when a tracked pathspec contains executable AffineScript.
 tracked_pathspec_has_evidence() {
   local pathspec=$1
   local path
@@ -89,6 +90,7 @@ tracked_pathspec_has_evidence() {
   return 1
 }
 
+# Return success when every manifest requirement for a capability has evidence.
 capability_has_evidence() {
   local requested_capability=$1
   local capability evidence_kind pathspec extra
