@@ -1,0 +1,10 @@
+# capability|evidence-kind|tracked-pathspec
+#
+# Every row for a capability is required. Implementation and behavior-test files
+# must contain executable AffineScript; declarations, comments, and TODOs do not
+# count. Update this manifest when capability implementations or tests move.
+affine-provider|implementation|src/**/providers/*.affine
+affine-provider|behavior-test|tests/rescript/Provider_test.affine
+crdt-sync|implementation|src/**/crdt/LWWMap.affine
+crdt-sync|implementation|src/**/crdt/Merge.affine
+crdt-sync|behavior-test|tests/rescript/CRDT_test.affine

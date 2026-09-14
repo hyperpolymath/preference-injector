@@ -12,9 +12,183 @@ earned_silver=0
 total_gold=0
 earned_gold=0
 
+capability_evidence_manifest=${RSR_CAPABILITY_EVIDENCE_MANIFEST:-scripts/rsr-capability-evidence.tsv}
+
+# A capability needs tracked, executable AffineScript in every implementation
+# and behavior-test path declared for it in the evidence manifest. Module/type
+# declarations and comments (including TODOs) are not implementation evidence.
+has_executable_affine_code() {
+  awk '
+    function trim(value) {
+      sub(/^[[:space:]]+/, "", value)
+      sub(/[[:space:]]+$/, "", value)
+      return value
+    }
+
+    function braces_delta(value, opens, closes) {
+      opens = gsub(/\{/, "", value)
+      closes = gsub(/\}/, "", value)
+      return opens - closes
+    }
+
+    function has_executable_function_body(body, normalized) {
+      normalized = body
+      gsub(/[{};]/, "", normalized)
+      normalized = trim(normalized)
+
+      # Empty and TODO-only function bodies are declarations, not evidence.
+      return length(normalized) &&
+        normalized !~ /^TODO([[:space:]]|:|_|-|\(|$)/
+    }
+
+    function is_assignment(code, without_arrows) {
+      without_arrows = code
+      gsub(/=>/, "", without_arrows)
+      return without_arrows ~ /^(export[[:space:]]+)?(let|const|var)[[:space:]].*=/
+    }
+
+    {
+      line = $0
+      code = ""
+
+      # Remove line and block comments before looking for executable syntax.
+      while (length(line) > 0) {
+        if (in_block_comment) {
+          comment_end = index(line, "*/")
+          if (!comment_end) {
+            line = ""
+            continue
+          }
+          line = substr(line, comment_end + 2)
+          in_block_comment = 0
+          continue
+        }
+
+        block_start = index(line, "/*")
+        line_comment = index(line, "//")
+        if (line_comment && (!block_start || line_comment < block_start)) {
+          code = code substr(line, 1, line_comment - 1)
+          line = ""
+        } else if (block_start) {
+          code = code substr(line, 1, block_start - 1)
+          line = substr(line, block_start + 2)
+          in_block_comment = 1
+        } else {
+          code = code line
+          line = ""
+        }
+      }
+
+      code = trim(code)
+      if (!length(code)) {
+        next
+      }
+
+      if (in_function_body) {
+        function_body = function_body "\n" code
+        function_brace_depth += braces_delta(code)
+        if (function_brace_depth <= 0) {
+          if (has_executable_function_body(function_body)) {
+            executable = 1
+          }
+          in_function_body = 0
+          function_body = ""
+        }
+        next
+      }
+
+      # Function declarations need an executable body. In particular, do not
+      # treat an empty or TODO-only body as implementation evidence.
+      if (code ~ /^(export[[:space:]]+)?(async[[:space:]]+)?(fn|function|def)[[:space:]]/) {
+        arrow = index(code, "=>")
+        open_brace = index(code, "{")
+        equals = index(code, "=")
+
+        if (arrow) {
+          function_body = substr(code, arrow + 2)
+        } else if (open_brace) {
+          function_body = substr(code, open_brace)
+        } else if (equals) {
+          function_body = substr(code, equals + 1)
+        } else {
+          next
+        }
+
+        function_brace_depth = braces_delta(function_body)
+        if (function_brace_depth > 0) {
+          in_function_body = 1
+        } else if (has_executable_function_body(function_body)) {
+          executable = 1
+        }
+        next
+      }
+
+      # Assignments, control flow, and calls are executable. A bare arrow is
+      # deliberately not enough: type aliases and declarations use it too.
+      if (is_assignment(code) ||
+          code ~ /^(return|yield|match|if|for|while)[[:space:]({]/ ||
+          code ~ /^[[:alnum:]_.]+[[:space:]]*\(.*\)[[:space:]]*;?$/) {
+        executable = 1
+      }
+    }
+
+    END { exit(executable ? 0 : 1) }
+  ' "$1"
+}
+
+# Return success when a tracked pathspec contains executable AffineScript.
+tracked_pathspec_has_evidence() {
+  local pathspec=$1
+  local path
+
+  while IFS= read -r -d '' path; do
+    if has_executable_affine_code "$path"; then
+      return 0
+    fi
+  done < <(git grep -l -z -e '' -- "$pathspec" 2>/dev/null)
+
+  return 1
+}
+
+# Return success when every manifest requirement for a capability has evidence.
+capability_has_evidence() {
+  local requested_capability=$1
+  local capability evidence_kind pathspec extra
+  local found_implementation=0
+  local found_behavior_test=0
+  local valid=1
+
+  [ -f "$capability_evidence_manifest" ] || return 1
+
+  while IFS='|' read -r capability evidence_kind pathspec extra; do
+    case "$capability" in
+      ''|'#'*) continue ;;
+    esac
+    [ "$capability" = "$requested_capability" ] || continue
+
+    # Reject malformed rows instead of silently weakening the evidence rules.
+    if [ -n "$extra" ] || [ -z "$pathspec" ]; then
+      valid=0
+      continue
+    fi
+
+    case "$evidence_kind" in
+      implementation) found_implementation=1 ;;
+      behavior-test) found_behavior_test=1 ;;
+      *) valid=0; continue ;;
+    esac
+
+    tracked_pathspec_has_evidence "$pathspec" || valid=0
+  done < "$capability_evidence_manifest"
+
+  [ "$valid" -eq 1 ] &&
+    [ "$found_implementation" -eq 1 ] &&
+    [ "$found_behavior_test" -eq 1 ]
+}
+
 # 1. Type Safety
 echo "1. Type Safety"
-if [ -f "deno.json" ] && grep -q '"strict": true' deno.json; then
+if [ -n "$(git ls-files 'src/**/*.affine' 2>/dev/null)" ]; then
   echo "  ✅ Bronze: 80/80 points"
   earned_bronze=$((earned_bronze + 80))
 else
@@ -22,7 +196,7 @@ else
 fi
 total_bronze=$((total_bronze + 80))
 
-if [ -f "bsconfig.json" ]; then
+if [ -f "Justfile" ] || [ -f "justfile" ]; then
   echo "  ✅ Silver: 20/20 points"
   earned_silver=$((earned_silver + 20))
 else
@@ -33,7 +207,7 @@ total_silver=$((total_silver + 20))
 # 2. Memory Safety
 echo ""
 echo "2. Memory Safety"
-if [ -f "deno.json" ]; then
+if [ -n "$(git ls-files 'src/**/*.affine' 2>/dev/null)" ]; then
   echo "  ✅ Bronze: 40/40 points"
   earned_bronze=$((earned_bronze + 40))
 else
@@ -46,7 +220,7 @@ echo "  ⚠️  Gold: 0/60 points (Rust core)"
 # 3. Offline-First
 echo ""
 echo "3. Offline-First"
-if [ -f "src/providers/offline-provider.ts" ] && grep -q "IndexedDB" src/providers/offline-provider.ts; then
+if capability_has_evidence "affine-provider"; then
   echo "  ✅ Bronze: 50/50 points"
   earned_bronze=$((earned_bronze + 50))
 else
@@ -55,7 +229,7 @@ fi
 total_bronze=$((total_bronze + 50))
 
 # Check for CRDT implementation
-if [ -f "src/crdt/mod.ts" ] && [ -f "src/crdt/lww-map.ts" ] && [ -f "src/crdt/merge.ts" ]; then
+if capability_has_evidence "crdt-sync"; then
   echo "  ✅ Silver: 30/30 points"
   earned_silver=$((earned_silver + 30))
 else
@@ -70,9 +244,10 @@ echo "  ⚠️  Gold: 0/20 points (Full offline)"
 echo ""
 echo "4. Documentation"
 docs_missing=0
-for file in README.md SECURITY.md CODE_OF_CONDUCT.md MAINTAINERS.adoc CONTRIBUTING.md CHANGELOG.md LICENSE; do
-  [ ! -f "$file" ] && docs_missing=1
+for doc in README SECURITY CODE_OF_CONDUCT MAINTAINERS CONTRIBUTING CHANGELOG; do
+  [ ! -f "$doc.md" ] && [ ! -f "$doc.adoc" ] && docs_missing=1
 done
+[ ! -f "LICENSE" ] && docs_missing=1
 if [ $docs_missing -eq 0 ]; then
   echo "  ✅ Bronze: 60/60 points"
   earned_bronze=$((earned_bronze + 60))
@@ -81,7 +256,7 @@ else
 fi
 total_bronze=$((total_bronze + 60))
 
-if [ -f "docs/API.md" ]; then
+if [ -f "docs/API.md" ] || [ -f "docs/API.adoc" ]; then
   echo "  ✅ Silver: 40/40 points"
   earned_silver=$((earned_silver + 40))
 else
@@ -92,7 +267,7 @@ total_silver=$((total_silver + 40))
 # 5. Build System
 echo ""
 echo "5. Build System"
-if [ -f "justfile" ]; then
+if [ -f "Justfile" ] || [ -f "justfile" ]; then
   echo "  ✅ Bronze: 40/40 points"
   earned_bronze=$((earned_bronze + 40))
 else
@@ -100,7 +275,7 @@ else
 fi
 total_bronze=$((total_bronze + 40))
 
-if [ -f "flake.nix" ]; then
+if [ -f "guix.scm" ]; then
   echo "  ✅ Silver: 30/30 points"
   earned_silver=$((earned_silver + 30))
 else
@@ -128,7 +303,7 @@ echo "  ⚠️  Gold: 0/20 points (Property-based testing)"
 # 7. Security
 echo ""
 echo "7. Security"
-if [ -f "SECURITY.md" ]; then
+if [ -f "SECURITY.md" ] || [ -f "SECURITY.adoc" ]; then
   echo "  ✅ Bronze: 30/30 points"
   earned_bronze=$((earned_bronze + 30))
 else
@@ -137,7 +312,7 @@ fi
 total_bronze=$((total_bronze + 30))
 
 # Check for post-quantum crypto implementation
-if [ -f "src/crypto/mod.ts" ] && [ -f "src/crypto/signatures.ts" ] && [ -f "src/crypto/keyexchange.ts" ] && [ -f "src/crypto/hashing.ts" ]; then
+if [ -n "$(git ls-files 'src/**/crypto/Signatures.affine' 2>/dev/null)" ] && [ -n "$(git ls-files 'src/**/crypto/KeyExchange.affine' 2>/dev/null)" ] && [ -n "$(git ls-files 'src/**/crypto/Hashing.affine' 2>/dev/null)" ]; then
   echo "  ✅ Silver: 40/40 points"
   earned_silver=$((earned_silver + 40))
 else
