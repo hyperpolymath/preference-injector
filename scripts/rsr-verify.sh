@@ -14,9 +14,8 @@ earned_gold=0
 
 capability_evidence_manifest=${RSR_CAPABILITY_EVIDENCE_MANIFEST:-scripts/rsr-capability-evidence.tsv}
 
-# A capability needs tracked, executable AffineScript in every implementation
-# and behavior-test path declared for it in the evidence manifest. Module/type
-# declarations and comments (including TODOs) are not implementation evidence.
+# Return success when the given file contains executable AffineScript.
+# Declarations, comments, and empty or TODO-only function bodies do not count.
 has_executable_affine_code() {
   awk '
     function trim(value) {
@@ -136,7 +135,8 @@ has_executable_affine_code() {
   ' "$1"
 }
 
-# Return success when a tracked pathspec contains executable AffineScript.
+# Return success when the Git pathspec matches a tracked file containing
+# executable AffineScript.
 tracked_pathspec_has_evidence() {
   local pathspec=$1
   local path
@@ -150,7 +150,8 @@ tracked_pathspec_has_evidence() {
   return 1
 }
 
-# Return success when every manifest requirement for a capability has evidence.
+# Return success when the named capability's manifest rows are well formed,
+# include both evidence kinds, and every pathspec matches executable AffineScript.
 capability_has_evidence() {
   local requested_capability=$1
   local capability evidence_kind pathspec extra
