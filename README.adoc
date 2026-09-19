@@ -273,7 +273,7 @@ Check the `examples/` directory for usage examples:
 
 == Contributing
 
-Contributions are welcome! Please see link:CONTRIBUTING.md[CONTRIBUTING.md] for guidelines.
+Contributions are welcome! Please see link:.github/CONTRIBUTING.md[CONTRIBUTING.md] for guidelines.
 
 *Important*: All contributions must follow the Hyperpolymath Language Policy. TypeScript, Node.js, npm, and Makefile contributions will be rejected.
 
