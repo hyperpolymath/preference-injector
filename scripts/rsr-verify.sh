@@ -276,7 +276,7 @@ else
 fi
 total_bronze=$((total_bronze + 40))
 
-if [ -f "guix.scm" ]; then
+if [ -f "build/guix.scm" ]; then
   echo "  ✅ Silver: 30/30 points"
   earned_silver=$((earned_silver + 30))
 else
