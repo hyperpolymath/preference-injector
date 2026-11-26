@@ -1,2 +1,5 @@
 CLAUDE.md
 build/                     # build orchestration: guix.scm relocated here (canon 1.2.1 guix-primary template_ref = "build/")
+
+# ─── JS manifest and locks (LANGUAGE-POLICY §1.4) ───────────────────────────
+deno.lock                  # generated compatibility lock (LANGUAGE-POLICY §1.4)
